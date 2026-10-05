@@ -5,112 +5,212 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SYSTEM BREACH DETECTED</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             background-color: #000;
             color: #0f0;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 16px;
-            margin: 0;
-            padding: 20px;
+            font-family: 'Share Tech Mono', monospace;
             overflow: hidden;
-            white-space: pre-wrap;
-            text-shadow: 0 0 5px #0f0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
         }
-        .red { color: #f00; text-shadow: 0 0 5px #f00; }
-        .yellow { color: #ff0; text-shadow: 0 0 5px #ff0; }
-        .cyan { color: #0ff; text-shadow: 0 0 5px #0ff; }
-        .cursor { animation: blink 1s step-end infinite; }
+
+        /* Matrix Canvas Background */
+        #matrixCanvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        /* CRT Scanline Effect */
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* Terminal Container */
+        .terminal-window {
+            position: relative;
+            z-index: 3;
+            width: 80%;
+            max-width: 900px;
+            height: 80vh;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid #0f0;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2), inset 0 0 20px rgba(0, 255, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+            font-size: 16px;
+            line-height: 1.5;
+            text-shadow: 0 0 2px #0f0;
+        }
+
+        /* Scrollbar styling */
+        .terminal-window::-webkit-scrollbar { width: 8px; }
+        .terminal-window::-webkit-scrollbar-track { background: #000; }
+        .terminal-window::-webkit-scrollbar-thumb { background: #0f0; }
+
+        .red { color: #ff3333; text-shadow: 0 0 5px #ff3333; }
+        .yellow { color: #ffff33; text-shadow: 0 0 5px #ffff33; }
+        .cyan { color: #33ffff; text-shadow: 0 0 5px #33ffff; }
+        .white { color: #ffffff; text-shadow: 0 0 5px #ffffff; }
+        
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 18px;
+            background-color: #0f0;
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+        }
+        
         @keyframes blink { 50% { opacity: 0; } }
+
+        /* Glitch Animation */
+        .glitch { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
     </style>
 </head>
 <body>
-<div id="terminal"></div>
+
+<canvas id="matrixCanvas"></canvas>
+<div class="terminal-window" id="terminal">
+    <div id="output"></div><span class="cursor"></span>
+</div>
 
 <script>
+    // --- MATRIX RAIN BACKGROUND ---
+    const canvas = document.getElementById('matrixCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEF';
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
+
+    function drawMatrix() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#0F0';
+        ctx.font = fontSize + 'px monospace';
+        for (let i = 0; i < drops.length; i++) {
+            const text = katakana.charAt(Math.floor(Math.random() * katakana.length));
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        }
+    }
+    setInterval(drawMatrix, 33);
+
+    // --- TERMINAL LOGIC ---
+    const outputDiv = document.getElementById('output');
     const term = document.getElementById('terminal');
     let output = '';
 
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
+    function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-    async function type(text, color = '') {
+    async function type(text, color = '', speed = 20) {
         for (let i = 0; i < text.length; i++) {
             output += `<span class="${color}">${text[i]}</span>`;
-            term.innerHTML = output + '<span class="cursor">_</span>';
-            await sleep(20);
+            outputDiv.innerHTML = output;
+            term.scrollTop = term.scrollHeight;
+            await sleep(speed);
         }
         output += '\n';
-        term.innerHTML = output + '<span class="cursor">_</span>';
+        outputDiv.innerHTML = output;
+        term.scrollTop = term.scrollHeight;
     }
 
     async function instant(text, color = '') {
         output += `<span class="${color}">${text}</span>\n`;
-        term.innerHTML = output + '<span class="cursor">_</span>';
+        outputDiv.innerHTML = output;
+        term.scrollTop = term.scrollHeight;
+        await sleep(100);
+    }
+
+    async function progressBar(label, color = 'cyan') {
+        output += `<span class="${color}">${label} [</span>`;
+        outputDiv.innerHTML = output;
+        term.scrollTop = term.scrollHeight;
+        for (let i = 0; i <= 20; i++) {
+            output += `<span class="${color}">=</span>`;
+            outputDiv.innerHTML = output;
+            term.scrollTop = term.scrollHeight;
+            await sleep(50);
+        }
+        output += `<span class="${color}">] 100%</span>\n`;
+        outputDiv.innerHTML = output;
+        term.scrollTop = term.scrollHeight;
         await sleep(300);
     }
 
-    async function glitchEffect() {
-        for (let i = 0; i < 5; i++) {
-            document.body.style.color = '#f00';
-            document.body.style.textShadow = '0 0 5px #f00';
-            await sleep(50);
-            document.body.style.color = '#0f0';
-            document.body.style.textShadow = '0 0 5px #0f0';
-            await sleep(50);
-        }
+    async function glitchScreen() {
+        document.body.classList.add('glitch');
+        await sleep(500);
+        document.body.classList.remove('glitch');
     }
 
+    // --- THE ATTACK SEQUENCE ---
     async function runBreach() {
-        await sleep(500);
-        await type('INITIALIZING KERNEL EXPLOIT...', 'yellow');
-        
-        // Matrix Rain
-        for (let i = 0; i < 8; i++) {
-            let line = '';
-            for (let j = 0; j < 40; j++) line += Math.random() > 0.5 ? '1' : '0';
-            await instant(line, 'cyan');
-        }
+        await sleep(1000);
+        await type('INITIALIZING KERNEL EXPLOIT...', 'yellow', 30);
+        await progressBar('LOADING PAYLOAD', 'cyan');
         
         await instant('\n[ SYSTEM BREACH INITIATED ]', 'red');
-        await sleep(1000);
+        await sleep(800);
         
-        // Network Scan
-        await type('[+] Scanning network for vulnerabilities...', 'green');
-        for (let i = 0; i < 8; i++) {
+        await type('[*] Scanning network for vulnerabilities...', 'green');
+        for (let i = 0; i < 6; i++) {
             let ip = `${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}:${Math.floor(Math.random()*65535)}`;
-            await instant(`  [*] Connecting to ${ip} ...`, '');
+            await instant(`  [*] Connecting to ${ip} ...`, 'white');
         }
-        await instant('[+] Access granted.', 'yellow');
-        await sleep(1000);
+        await instant('[+] Access granted. Root privileges obtained.', 'yellow');
+        await sleep(500);
 
-        // Brute Force
         await type('[!] BRUTE FORCE ATTACK INITIATED', 'yellow');
-        for (let i = 0; i < 8; i++) {
-            let pass = Math.random().toString(36).substring(2, 10).toUpperCase();
-            await instant(`  Trying: ${pass}`, '');
+        for (let i = 0; i < 5; i++) {
+            let pass = Math.random().toString(36).substring(2, 12).toUpperCase();
+            await instant(`  Trying: ${pass}`, 'white');
         }
         await instant('[+] PASSWORD CRACKED: admin123', 'green');
-        await sleep(1000);
+        await sleep(500);
 
-        // Hex Dump
+        await progressBar('EXTRACTING DATABASE', 'yellow');
         await type('[*] Dumping memory 0x7FFF0000 - 0x7FFFFFFF', 'green');
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 5; i++) {
             let addr = '0x7FFF' + Math.floor(Math.random()*255).toString(16).padStart(2, '0');
             let hex = '';
             for (let j = 0; j < 8; j++) hex += Math.floor(Math.random()*255).toString(16).padStart(2, '0').toUpperCase() + ' ';
-            await instant(`  ${addr}  ${hex}  ................`, '');
+            await instant(`  ${addr}  ${hex}  ................`, 'white');
         }
-        await sleep(1000);
+        
+        await glitchScreen();
+        await instant('\n[!] WARNING: UNAUTHORIZED ACCESS DETECTED', 'red');
+        await glitchScreen();
 
-        // Glitch
-        await glitchEffect();
-        await instant('[!] WARNING: UNAUTHORIZED ACCESS DETECTED', 'red');
-        await glitchEffect();
-
-        // Final Breach
-        document.body.style.color = '#f00';
-        document.body.style.textShadow = '0 0 5px #f00';
+        document.body.style.color = '#ff3333';
+        document.body.style.textShadow = '0 0 5px #ff3333';
+        
         await instant('##############################################', 'red');
         await instant('#        C R I T I C A L   E R R O R         #', 'red');
         await instant('##############################################', 'red');
