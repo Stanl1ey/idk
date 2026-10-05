@@ -3,84 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SYSTEM BREACH DETECTED</title>
+    <title>SECURE TERMINAL // ROOT ACCESS</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;700&display=swap');
         
+        :root {
+            --bg: #05080a;
+            --panel-bg: rgba(10, 20, 30, 0.7);
+            --primary: #00ffcc;
+            --secondary: #ff0055;
+            --text: #c0c0c0;
+            --border: rgba(0, 255, 204, 0.3);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
         body {
-            background-color: #000;
-            color: #0f0;
-            font-family: 'Share Tech Mono', monospace;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Fira Code', monospace;
             overflow: hidden;
             height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
+            display: grid;
+            grid-template-rows: 40px 1fr 30px;
+            grid-template-columns: 250px 1fr 250px;
+            gap: 10px;
+            padding: 10px;
         }
 
-        /* Matrix Canvas Background */
-        #matrixCanvas {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1;
-            opacity: 0.3;
-        }
-
-        /* CRT Scanline Effect */
+        /* CRT Overlay */
         body::after {
             content: " ";
             display: block;
             position: absolute;
             top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2;
+            z-index: 999;
             background-size: 100% 2px, 3px 100%;
             pointer-events: none;
         }
 
-        /* Terminal Container */
-        .terminal-window {
+        /* Panel Styling */
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.1);
+            padding: 10px;
             position: relative;
-            z-index: 3;
-            width: 80%;
-            max-width: 900px;
-            height: 80vh;
-            background: rgba(0, 0, 0, 0.85);
-            border: 1px solid #0f0;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2), inset 0 0 20px rgba(0, 255, 0, 0.1);
-            padding: 20px;
-            overflow-y: auto;
-            font-size: 16px;
-            line-height: 1.5;
-            text-shadow: 0 0 2px #0f0;
-        }
-
-        /* Scrollbar styling */
-        .terminal-window::-webkit-scrollbar { width: 8px; }
-        .terminal-window::-webkit-scrollbar-track { background: #000; }
-        .terminal-window::-webkit-scrollbar-thumb { background: #0f0; }
-
-        .red { color: #ff3333; text-shadow: 0 0 5px #ff3333; }
-        .yellow { color: #ffff33; text-shadow: 0 0 5px #ffff33; }
-        .cyan { color: #33ffff; text-shadow: 0 0 5px #33ffff; }
-        .white { color: #ffffff; text-shadow: 0 0 5px #ffffff; }
-        
-        .cursor {
-            display: inline-block;
-            width: 10px;
-            height: 18px;
-            background-color: #0f0;
-            animation: blink 1s step-end infinite;
-            vertical-align: middle;
+            overflow: hidden;
         }
         
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 10px; height: 10px;
+            border-top: 2px solid var(--primary);
+            border-left: 2px solid var(--primary);
+        }
+        .panel::after {
+            content: '';
+            position: absolute;
+            bottom: 0; right: 0; width: 10px; height: 10px;
+            border-bottom: 2px solid var(--primary);
+            border-right: 2px solid var(--primary);
+        }
+
+        /* Header */
+        .header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            font-weight: bold;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
+            background: #0a1015;
+        }
+
+        .header .blink { animation: blink 1s step-end infinite; }
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* Glitch Animation */
-        .glitch { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+        /* Left Column */
+        .left-panel { grid-row: 2; grid-column: 1; display: flex; flex-direction: column; gap: 10px; }
+        .log { font-size: 11px; color: #888; margin-bottom: 5px; }
+        .log span { color: var(--primary); }
+
+        /* Center Column */
+        .center-panel { grid-row: 2; grid-column: 2; display: flex; flex-direction: column; gap: 10px; }
+        .radar-container {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle, rgba(0,255,204,0.05) 0%, transparent 70%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas#radar { width: 100%; height: 100%; }
+
+        .progress-container { margin-top: auto; }
+        .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--primary); margin-bottom: 5px; }
+        .progress-bar {
+            width: 100%; height: 15px;
+            background: rgba(0, 255, 204, 0.1);
+            border: 1px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; width: 0%;
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+            transition: width 0.1s linear;
+        }
+
+        /* Right Column */
+        .right-panel { grid-row: 2; grid-column: 3; display: flex; flex-direction: column; }
+        .hex-dump {
+            font-size: 10px; line-height: 1.2;
+            color: #4a9f8b; flex: 1;
+            overflow: hidden;
+            word-break: break-all;
+        }
+
+        /* Bottom Terminal */
+        .terminal-panel {
+            grid-column: 1 / -1; grid-row: 3;
+            display: flex; align-items: center;
+            padding: 0 15px; font-size: 14px;
+            background: rgba(0, 0, 0, 0.8);
+        }
+        .prompt { color: var(--primary); margin-right: 10px; }
+        .cmd-text { color: #fff; }
+        .cursor {
+            display: inline-block; width: 8px; height: 15px;
+            background-color: var(--primary); margin-left: 5px;
+            animation: blink 1s step-end infinite;
+        }
+
+        /* Red Alert Mode */
+        .alert-mode { --primary: #ff0055; --border: rgba(255, 0, 85, 0.5); }
+        .alert-mode .panel { box-shadow: 0 0 15px rgba(255, 0, 85, 0.3); }
+        .alert-mode .header { color: var(--primary); box-shadow: 0 0 20px rgba(255, 0, 85, 0.3); }
+        
+        /* Glitch Effect */
+        .glitch { animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake {
             10%, 90% { transform: translate3d(-2px, 0, 0); }
             20%, 80% { transform: translate3d(4px, 0, 0); }
@@ -91,137 +161,189 @@
 </head>
 <body>
 
-<canvas id="matrixCanvas"></canvas>
-<div class="terminal-window" id="terminal">
-    <div id="output"></div><span class="cursor"></span>
-</div>
+    <div class="header">
+        <div>SECURE TERMINAL // ACCESS LEVEL: ROOT</div>
+        <div>TARGET: 192.168.1.1 <span class="blink">_</span></div>
+    </div>
+
+    <div class="panel left-panel">
+        <div style="color: var(--primary); margin-bottom: 10px; font-weight: bold;">SYSTEM LOGS</div>
+        <div id="logs"></div>
+    </div>
+
+    <div class="panel center-panel">
+        <div class="radar-container">
+            <canvas id="radar"></canvas>
+        </div>
+        <div class="progress-container">
+            <div class="progress-label">
+                <span id="progress-text">EXTRACTING DATA...</span>
+                <span id="progress-percent">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel right-panel">
+        <div style="color: var(--primary); margin-bottom: 10px; font-weight: bold;">MEMORY DUMP</div>
+        <div class="hex-dump" id="hex"></div>
+    </div>
+
+    <div class="panel terminal-panel">
+        <span class="prompt">root@kali:~#</span>
+        <span class="cmd-text" id="cmd"></span>
+        <span class="cursor"></span>
+    </div>
 
 <script>
-    // --- MATRIX RAIN BACKGROUND ---
-    const canvas = document.getElementById('matrixCanvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    // --- RADAR ANIMATION ---
+    const radarCanvas = document.getElementById('radar');
+    const rCtx = radarCanvas.getContext('2d');
+    let angle = 0;
 
-    const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEF';
-    const fontSize = 16;
-    const columns = canvas.width / fontSize;
-    const drops = Array(Math.floor(columns)).fill(1);
+    function resizeRadar() {
+        radarCanvas.width = radarCanvas.parentElement.clientWidth;
+        radarCanvas.height = radarCanvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resizeRadar);
+    resizeRadar();
 
-    function drawMatrix() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#0F0';
-        ctx.font = fontSize + 'px monospace';
-        for (let i = 0; i < drops.length; i++) {
-            const text = katakana.charAt(Math.floor(Math.random() * katakana.length));
-            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-            drops[i]++;
+    function drawRadar() {
+        rCtx.clearRect(0, 0, radarCanvas.width, radarCanvas.height);
+        const cx = radarCanvas.width / 2;
+        const cy = radarCanvas.height / 2;
+        const radius = Math.min(cx, cy) * 0.8;
+
+        // Grid
+        rCtx.strokeStyle = 'rgba(0, 255, 204, 0.2)';
+        rCtx.lineWidth = 1;
+        for (let i = 1; i <= 4; i++) {
+            rCtx.beginPath();
+            rCtx.arc(cx, cy, radius * (i / 4), 0, Math.PI * 2);
+            rCtx.stroke();
         }
-    }
-    setInterval(drawMatrix, 33);
+        rCtx.beginPath(); rCtx.moveTo(cx - radius, cy); rCtx.lineTo(cx + radius, cy); rCtx.stroke();
+        rCtx.beginPath(); rCtx.moveTo(cx, cy - radius); rCtx.lineTo(cx, cy + radius); rCtx.stroke();
 
-    // --- TERMINAL LOGIC ---
-    const outputDiv = document.getElementById('output');
-    const term = document.getElementById('terminal');
-    let output = '';
-
-    function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-
-    async function type(text, color = '', speed = 20) {
-        for (let i = 0; i < text.length; i++) {
-            output += `<span class="${color}">${text[i]}</span>`;
-            outputDiv.innerHTML = output;
-            term.scrollTop = term.scrollHeight;
-            await sleep(speed);
-        }
-        output += '\n';
-        outputDiv.innerHTML = output;
-        term.scrollTop = term.scrollHeight;
-    }
-
-    async function instant(text, color = '') {
-        output += `<span class="${color}">${text}</span>\n`;
-        outputDiv.innerHTML = output;
-        term.scrollTop = term.scrollHeight;
-        await sleep(100);
-    }
-
-    async function progressBar(label, color = 'cyan') {
-        output += `<span class="${color}">${label} [</span>`;
-        outputDiv.innerHTML = output;
-        term.scrollTop = term.scrollHeight;
-        for (let i = 0; i <= 20; i++) {
-            output += `<span class="${color}">=</span>`;
-            outputDiv.innerHTML = output;
-            term.scrollTop = term.scrollHeight;
-            await sleep(50);
-        }
-        output += `<span class="${color}">] 100%</span>\n`;
-        outputDiv.innerHTML = output;
-        term.scrollTop = term.scrollHeight;
-        await sleep(300);
-    }
-
-    async function glitchScreen() {
-        document.body.classList.add('glitch');
-        await sleep(500);
-        document.body.classList.remove('glitch');
-    }
-
-    // --- THE ATTACK SEQUENCE ---
-    async function runBreach() {
-        await sleep(1000);
-        await type('INITIALIZING KERNEL EXPLOIT...', 'yellow', 30);
-        await progressBar('LOADING PAYLOAD', 'cyan');
+        // Sweep
+        angle += 0.05;
+        const grad = rCtx.createConicGradient(angle, cx, cy);
+        grad.addColorStop(0, 'rgba(0, 255, 204, 0.8)');
+        grad.addColorStop(0.1, 'rgba(0, 255, 204, 0)');
+        grad.addColorStop(1, 'rgba(0, 255, 204, 0)');
         
-        await instant('\n[ SYSTEM BREACH INITIATED ]', 'red');
-        await sleep(800);
-        
-        await type('[*] Scanning network for vulnerabilities...', 'green');
-        for (let i = 0; i < 6; i++) {
-            let ip = `${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}:${Math.floor(Math.random()*65535)}`;
-            await instant(`  [*] Connecting to ${ip} ...`, 'white');
-        }
-        await instant('[+] Access granted. Root privileges obtained.', 'yellow');
-        await sleep(500);
+        rCtx.fillStyle = grad;
+        rCtx.beginPath();
+        rCtx.moveTo(cx, cy);
+        rCtx.arc(cx, cy, radius, angle, angle + Math.PI / 4);
+        rCtx.fill();
 
-        await type('[!] BRUTE FORCE ATTACK INITIATED', 'yellow');
+        // Blips
+        rCtx.fillStyle = '#ff0055';
         for (let i = 0; i < 5; i++) {
-            let pass = Math.random().toString(36).substring(2, 12).toUpperCase();
-            await instant(`  Trying: ${pass}`, 'white');
+            const bx = cx + (Math.random() - 0.5) * radius * 1.5;
+            const by = cy + (Math.random() - 0.5) * radius * 1.5;
+            if (Math.hypot(bx - cx, by - cy) < radius) {
+                rCtx.beginPath();
+                rCtx.arc(bx, by, 2, 0, Math.PI * 2);
+                rCtx.fill();
+            }
         }
-        await instant('[+] PASSWORD CRACKED: admin123', 'green');
-        await sleep(500);
 
-        await progressBar('EXTRACTING DATABASE', 'yellow');
-        await type('[*] Dumping memory 0x7FFF0000 - 0x7FFFFFFF', 'green');
-        for (let i = 0; i < 5; i++) {
-            let addr = '0x7FFF' + Math.floor(Math.random()*255).toString(16).padStart(2, '0');
-            let hex = '';
-            for (let j = 0; j < 8; j++) hex += Math.floor(Math.random()*255).toString(16).padStart(2, '0').toUpperCase() + ' ';
-            await instant(`  ${addr}  ${hex}  ................`, 'white');
-        }
-        
-        await glitchScreen();
-        await instant('\n[!] WARNING: UNAUTHORIZED ACCESS DETECTED', 'red');
-        await glitchScreen();
-
-        document.body.style.color = '#ff3333';
-        document.body.style.textShadow = '0 0 5px #ff3333';
-        
-        await instant('##############################################', 'red');
-        await instant('#        C R I T I C A L   E R R O R         #', 'red');
-        await instant('##############################################', 'red');
-        await instant(`[!] ERROR CODE: 0x${Math.floor(Math.random()*16777215).toString(16).toUpperCase()}`, 'yellow');
-        await instant('[!] SYSTEM COMPROMISED', 'red');
-        await instant('[!] ALL YOUR BASE ARE BELONG TO US', 'red');
-        await instant('[!] DATA EXFILTRATION COMPLETE', 'red');
-        await instant('\nPress any key to terminate connection...', 'white');
+        requestAnimationFrame(drawRadar);
     }
+    drawRadar();
 
-    runBreach();
+    // --- MEMORY DUMP ---
+    const hexDiv = document.getElementById('hex');
+    const hexChars = '0123456789ABCDEF';
+    setInterval(() => {
+        let str = '';
+        for (let i = 0; i < 5; i++) {
+            let line = '0x' + Math.floor(Math.random()*16777215).toString(16).toUpperCase().padStart(6, '0') + '  ';
+            for (let j = 0; j < 8; j++) {
+                line += hexChars[Math.floor(Math.random()*16)] + hexChars[Math.floor(Math.random()*16)] + ' ';
+            }
+            str += line + '<br>';
+        }
+        hexDiv.innerHTML = str;
+    }, 50);
+
+    // --- SYSTEM LOGS ---
+    const logsDiv = document.getElementById('logs');
+    const logMessages = [
+        'Bypassing firewall...', 'Injecting payload...', 'Escalating privileges...',
+        'Connecting to C2 server...', 'Downloading payload...', 'Dumping SAM hashes...',
+        'Cracking passwords...', 'Exfiltrating data...', 'Covering tracks...',
+        'Accessing root directory...', 'Modifying registry...', 'Disabling antivirus...'
+    ];
+    setInterval(() => {
+        const msg = logMessages[Math.floor(Math.random() * logMessages.length)];
+        const ip = `${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
+        const time = new Date().toLocaleTimeString();
+        const log = document.createElement('div');
+        log.className = 'log';
+        log.innerHTML = `[${time}] <span>[${ip}]</span> ${msg}`;
+        logsDiv.appendChild(log);
+        if (logsDiv.children.length > 15) logsDiv.removeChild(logsDiv.firstChild);
+    }, 300);
+
+    // --- TERMINAL COMMAND TYPING ---
+    const cmdDiv = document.getElementById('cmd');
+    const commands = [
+        'nmap -sS -A 192.168.1.1',
+        'msfconsole -q',
+        'use exploit/windows/smb/ms17_010_eternalblue',
+        'set RHOSTS 192.168.1.1',
+        'exploit',
+        'hashcat -m 1000 hashes.txt rockyou.txt',
+        'sqlmap -u http://target.com/login --dbs',
+        'aircrack-ng -w wordlist.txt capture.cap'
+    ];
+    let cmdIndex = 0;
+    let charIndex = 0;
+    
+    function typeCommand() {
+        if (cmdIndex >= commands.length) return;
+        const cmd = commands[cmdIndex];
+        if (charIndex < cmd.length) {
+            cmdDiv.innerHTML += cmd[charIndex];
+            charIndex++;
+            setTimeout(typeCommand, 50);
+        } else {
+            setTimeout(() => {
+                cmdDiv.innerHTML = '';
+                cmdIndex++;
+                charIndex = 0;
+                typeCommand();
+            }, 1000);
+        }
+    }
+    setTimeout(typeCommand, 2000);
+
+    // --- PROGRESS BAR ---
+    const progressFill = document.getElementById('progress-fill');
+    const progressPercent = document.getElementById('progress-percent');
+    let progress = 0;
+    
+    const progressInterval = setInterval(() => {
+        progress += Math.random() * 5;
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(progressInterval);
+            setTimeout(() => {
+                document.body.classList.add('glitch');
+                document.body.classList.add('alert-mode');
+                document.getElementById('progress-text').innerText = 'SYSTEM BREACHED';
+                setTimeout(() => document.body.classList.remove('glitch'), 500);
+            }, 500);
+        }
+        progressFill.style.width = progress + '%';
+        progressPercent.innerText = Math.floor(progress) + '%';
+    }, 100);
+
 </script>
 </body>
 </html>
