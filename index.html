@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSTEM BREACH DETECTED</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #0f0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            margin: 0;
+            padding: 20px;
+            overflow: hidden;
+            white-space: pre-wrap;
+            text-shadow: 0 0 5px #0f0;
+        }
+        .red { color: #f00; text-shadow: 0 0 5px #f00; }
+        .yellow { color: #ff0; text-shadow: 0 0 5px #ff0; }
+        .cyan { color: #0ff; text-shadow: 0 0 5px #0ff; }
+        .cursor { animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+<div id="terminal"></div>
+
+<script>
+    const term = document.getElementById('terminal');
+    let output = '';
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function type(text, color = '') {
+        for (let i = 0; i < text.length; i++) {
+            output += `<span class="${color}">${text[i]}</span>`;
+            term.innerHTML = output + '<span class="cursor">_</span>';
+            await sleep(20);
+        }
+        output += '\n';
+        term.innerHTML = output + '<span class="cursor">_</span>';
+    }
+
+    async function instant(text, color = '') {
+        output += `<span class="${color}">${text}</span>\n`;
+        term.innerHTML = output + '<span class="cursor">_</span>';
+        await sleep(300);
+    }
+
+    async function glitchEffect() {
+        for (let i = 0; i < 5; i++) {
+            document.body.style.color = '#f00';
+            document.body.style.textShadow = '0 0 5px #f00';
+            await sleep(50);
+            document.body.style.color = '#0f0';
+            document.body.style.textShadow = '0 0 5px #0f0';
+            await sleep(50);
+        }
+    }
+
+    async function runBreach() {
+        await sleep(500);
+        await type('INITIALIZING KERNEL EXPLOIT...', 'yellow');
+        
+        // Matrix Rain
+        for (let i = 0; i < 8; i++) {
+            let line = '';
+            for (let j = 0; j < 40; j++) line += Math.random() > 0.5 ? '1' : '0';
+            await instant(line, 'cyan');
+        }
+        
+        await instant('\n[ SYSTEM BREACH INITIATED ]', 'red');
+        await sleep(1000);
+        
+        // Network Scan
+        await type('[+] Scanning network for vulnerabilities...', 'green');
+        for (let i = 0; i < 8; i++) {
+            let ip = `${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}:${Math.floor(Math.random()*65535)}`;
+            await instant(`  [*] Connecting to ${ip} ...`, '');
+        }
+        await instant('[+] Access granted.', 'yellow');
+        await sleep(1000);
+
+        // Brute Force
+        await type('[!] BRUTE FORCE ATTACK INITIATED', 'yellow');
+        for (let i = 0; i < 8; i++) {
+            let pass = Math.random().toString(36).substring(2, 10).toUpperCase();
+            await instant(`  Trying: ${pass}`, '');
+        }
+        await instant('[+] PASSWORD CRACKED: admin123', 'green');
+        await sleep(1000);
+
+        // Hex Dump
+        await type('[*] Dumping memory 0x7FFF0000 - 0x7FFFFFFF', 'green');
+        for (let i = 0; i < 8; i++) {
+            let addr = '0x7FFF' + Math.floor(Math.random()*255).toString(16).padStart(2, '0');
+            let hex = '';
+            for (let j = 0; j < 8; j++) hex += Math.floor(Math.random()*255).toString(16).padStart(2, '0').toUpperCase() + ' ';
+            await instant(`  ${addr}  ${hex}  ................`, '');
+        }
+        await sleep(1000);
+
+        // Glitch
+        await glitchEffect();
+        await instant('[!] WARNING: UNAUTHORIZED ACCESS DETECTED', 'red');
+        await glitchEffect();
+
+        // Final Breach
+        document.body.style.color = '#f00';
+        document.body.style.textShadow = '0 0 5px #f00';
+        await instant('##############################################', 'red');
+        await instant('#        C R I T I C A L   E R R O R         #', 'red');
+        await instant('##############################################', 'red');
+        await instant(`[!] ERROR CODE: 0x${Math.floor(Math.random()*16777215).toString(16).toUpperCase()}`, 'yellow');
+        await instant('[!] SYSTEM COMPROMISED', 'red');
+        await instant('[!] ALL YOUR BASE ARE BELONG TO US', 'red');
+        await instant('[!] DATA EXFILTRATION COMPLETE', 'red');
+        await instant('\nPress any key to terminate connection...', 'white');
+    }
+
+    runBreach();
+</script>
+</body>
+</html>
