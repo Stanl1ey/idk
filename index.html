@@ -29,6 +29,7 @@
             grid-template-columns: 250px 1fr 250px;
             gap: 10px;
             padding: 10px;
+            transition: background 0.3s;
         }
 
         /* CRT Overlay */
@@ -157,6 +158,103 @@
             30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
             40%, 60% { transform: translate3d(6px, 0, 0); }
         }
+
+        /* Invert Color Flash */
+        .invert { filter: invert(1); }
+
+        /* --- SCARY ERROR POPUP --- */
+        .error-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .error-content {
+            background: #0a0000;
+            border: 3px solid #ff0000;
+            box-shadow: 0 0 50px #ff0000, inset 0 0 30px #ff0000;
+            padding: 50px;
+            text-align: center;
+            max-width: 700px;
+            width: 90%;
+            animation: pulse-red 1.5s infinite, shake 0.5s infinite;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 50px #ff0000, inset 0 0 30px #ff0000; border-color: #ff0000; }
+            50% { box-shadow: 0 0 100px #ff0000, inset 0 0 60px #ff0000; border-color: #ff4444; }
+            100% { box-shadow: 0 0 50px #ff0000, inset 0 0 30px #ff0000; border-color: #ff0000; }
+        }
+
+        .warning-icon {
+            font-size: 100px;
+            color: #ff0000;
+            text-shadow: 0 0 30px #ff0000;
+            margin-bottom: 20px;
+            animation: shake 0.3s infinite;
+        }
+
+        .error-content h1 {
+            color: #ff0000;
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 20px #ff0000;
+        }
+
+        .error-content p {
+            color: #ffcccc;
+            font-size: 18px;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+        }
+
+        .error-code {
+            font-size: 28px !important;
+            color: #ff0000 !important;
+            font-weight: bold;
+            background: #000;
+            padding: 15px;
+            border: 2px dashed #ff0000;
+            margin: 20px 0;
+            animation: blink 1s step-end infinite;
+        }
+
+        .threat {
+            font-size: 22px !important;
+            color: #ffff00 !important;
+            font-weight: bold;
+            animation: blink 0.5s step-end infinite;
+        }
+
+        .close-btn {
+            background: #ff0000;
+            color: #000;
+            border: none;
+            padding: 20px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 30px;
+            text-transform: uppercase;
+            font-family: inherit;
+            transition: all 0.2s;
+            box-shadow: 0 0 20px #ff0000;
+        }
+
+        .close-btn:hover {
+            background: #fff;
+            color: #ff0000;
+            box-shadow: 0 0 40px #fff;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -195,6 +293,19 @@
         <span class="prompt">root@kali:~#</span>
         <span class="cmd-text" id="cmd"></span>
         <span class="cursor"></span>
+    </div>
+
+    <!-- THE SCARY POPUP -->
+    <div class="error-modal" id="error-modal">
+        <div class="error-content">
+            <div class="warning-icon">⚠️</div>
+            <h1>CRITICAL SYSTEM ERROR</h1>
+            <p>UNAUTHORIZED ACCESS DETECTED</p>
+            <div class="error-code">ERROR CODE: 0x000000F4</div>
+            <p class="threat">YOUR IDENTITY HAS BEEN COMPROMISED!!!</p>
+            <p style="font-size: 14px; color: #888; margin-top: 15px;">CONNECTION TERMINATED BY REMOTE HOST</p>
+            <button class="close-btn" id="close-btn">TERMINATE CONNECTION</button>
+        </div>
     </div>
 
 <script>
@@ -323,26 +434,87 @@
     }
     setTimeout(typeCommand, 2000);
 
-    // --- PROGRESS BAR ---
+    // --- PROGRESS BAR & SCARY TRIGGER ---
     const progressFill = document.getElementById('progress-fill');
     const progressPercent = document.getElementById('progress-percent');
     let progress = 0;
+    let triggered = false;
     
     const progressInterval = setInterval(() => {
         progress += Math.random() * 5;
         if (progress >= 100) {
             progress = 100;
             clearInterval(progressInterval);
-            setTimeout(() => {
+            
+            if (!triggered) {
+                triggered = true;
+                
+                // 1. Glitch and Red Alert
                 document.body.classList.add('glitch');
                 document.body.classList.add('alert-mode');
                 document.getElementById('progress-text').innerText = 'SYSTEM BREACHED';
                 setTimeout(() => document.body.classList.remove('glitch'), 500);
-            }, 500);
+
+                // 2. Invert colors for a split second
+                setTimeout(() => {
+                    document.body.classList.add('invert');
+                    setTimeout(() => document.body.classList.remove('invert'), 200);
+                }, 800);
+
+                // 3. Show the scary popup
+                setTimeout(() => {
+                    document.getElementById('error-modal').style.display = 'flex';
+                    // Shake the whole screen again
+                    document.body.classList.add('glitch');
+                    setTimeout(() => document.body.classList.remove('glitch'), 500);
+                }, 1000);
+            }
         }
         progressFill.style.width = progress + '%';
         progressPercent.innerText = Math.floor(progress) + '%';
     }, 100);
+
+    // --- CLOSE BUTTON ---
+    document.getElementById('close-btn').addEventListener('click', () => {
+        document.getElementById('error-modal').style.display = 'none';
+        document.body.classList.remove('alert-mode');
+        // Reset progress
+        progress = 0;
+        triggered = false;
+        progressFill.style.width = '0%';
+        progressPercent.innerText = '0%';
+        document.getElementById('progress-text').innerText = 'EXTRACTING DATA...';
+        // Restart interval
+        setIntervalLogic();
+    });
+
+    function setIntervalLogic() {
+        const newInterval = setInterval(() => {
+            progress += Math.random() * 5;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(newInterval);
+                if (!triggered) {
+                    triggered = true;
+                    document.body.classList.add('glitch');
+                    document.body.classList.add('alert-mode');
+                    document.getElementById('progress-text').innerText = 'SYSTEM BREACHED';
+                    setTimeout(() => document.body.classList.remove('glitch'), 500);
+                    setTimeout(() => {
+                        document.body.classList.add('invert');
+                        setTimeout(() => document.body.classList.remove('invert'), 200);
+                    }, 800);
+                    setTimeout(() => {
+                        document.getElementById('error-modal').style.display = 'flex';
+                        document.body.classList.add('glitch');
+                        setTimeout(() => document.body.classList.remove('glitch'), 500);
+                    }, 1000);
+                }
+            }
+            progressFill.style.width = progress + '%';
+            progressPercent.innerText = Math.floor(progress) + '%';
+        }, 100);
+    }
 
 </script>
 </body>
